@@ -21,6 +21,10 @@ npm run check
 
 The source is the release artifact. There is no bundling step, package download, dependency audit surface, or remote deployment configured. To serve it elsewhere later, use a dedicated HTTPS static origin and these same files.
 
+## Development workflow
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for issue-numbered branches, scoped Conventional Commits, pull requests and merge rules. [GitHub Actions](.github/workflows/validate.yml) runs syntax checks and tests on Node 22 and 24 for pull requests and main pushes.
+
 ## How it behaves
 
 - Company, role, calendar deadline and HTTP(S) job link are required. Applications can be edited or deleted with confirmation.
