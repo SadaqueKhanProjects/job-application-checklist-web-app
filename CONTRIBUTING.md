@@ -25,6 +25,8 @@ git diff --check
 
 Exercise changed user flows in a browser and distinguish browser evidence from automated or static checks. No install or build command is required while the project has no dependencies or bundling.
 
+Before triggering GitHub-hosted CI, verify that a hard spending block prevents paid Actions overages. GitHub Actions for private repositories uses a shared included allowance; if the block cannot be verified, run checks locally and report the blocker instead of triggering a potentially billable workflow. See the [free-only project instructions](AGENTS.md) and [GitHub Actions billing](https://docs.github.com/en/actions/concepts/billing-and-usage).
+
 Push the work branch and open a PR into `main` with a Conventional Commit-style title. Explain what changed, why, architectural decisions, affected areas and actual validation. Reference the work item with `Closes #<issue-number>` when complete. GitHub Actions checks syntax and tests on Node 22 and 24 with read-only permissions. Wait for the actual check results.
 
 Under the owner's authorized AI-agent workflow, merge completed PRs when checks pass and no conflicts, unresolved safety concerns or incomplete work remain. Use a merge commit to preserve focused implementation commits. Then fetch and fast-forward local `main` before the next work item. Do not merge failed, incomplete or materially different work. Branch protection is not configured by these instructions; these are the project's workflow rules, not a claim of an enforced GitHub gate.
