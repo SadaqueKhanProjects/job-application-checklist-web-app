@@ -89,3 +89,14 @@ test('filtering searches new details, combines selections and sorts applied date
   assert.deepEqual(filterApplications(apps, { status: 'Submitted' }), []);
   assert.deepEqual(filterApplications(apps, { sort: 'applied' }), [b, a]); assert.deepEqual(apps, [a, b]);
 });
+test('malformed v2 records and duplicate IDs fail reads without changing saved contents', () => {
+  const storage = memoryStorage();
+  for (const applications of [[{ ...sample(), appliedOn: 'not a date' }], [{ ...sample(), contact: null }], [sample(), sample()]]) {
+    const raw = JSON.stringify({ version: SCHEMA_VERSION, applications });
+    storage.setItem(STORAGE_KEY, raw); assert.throws(() => readApplications(storage)); assert.equal(storage.getItem(STORAGE_KEY), raw);
+  }
+});
+test('withdrawal before submission does not manufacture an application date', () => {
+  const app = updateStatus(sample(), 'Withdrawn');
+  assert.equal(app.appliedOn, ''); assert.equal(app.submittedAt, null); assert.equal(app.tasks[4], false);
+});
