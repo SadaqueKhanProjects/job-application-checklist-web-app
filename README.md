@@ -1,6 +1,6 @@
 # Job Application Checklist
 
-A browser-only workspace for keeping job applications moving. Add an opportunity, complete its checklist, and keep deadlines and outstanding documents visible. No account, application backend, analytics, remote fonts, or runtime dependencies.
+A browser-only workspace for keeping job applications moving. Add an opportunity, complete its checklist, and keep deadlines and outstanding documents visible. No account, application backend, analytics or remote fonts. Screenshot OCR is bundled locally.
 
 ## Run locally
 
@@ -19,7 +19,7 @@ npm test
 npm run check
 ```
 
-The source is the release artifact. There is no bundling step, package download, dependency audit surface, or remote deployment configured. To serve it elsewhere later, use a dedicated HTTPS static origin and these same files.
+The source is the release artifact. There is no bundling or package installation step and no remote deployment configured. The bundled OCR components and their licences are listed in [vendor/ocr/README.md](vendor/ocr/README.md). To serve it elsewhere later, use a dedicated HTTPS static origin and these same files.
 
 ## Development workflow
 
@@ -28,6 +28,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for issue-numbered branches, scoped Conve
 ## How it behaves
 
 - Company, role, calendar deadline and HTTP(S) job link are required. Applications can be edited or deleted with confirmation.
+- In Add application, expand **Fill details from a job description or screenshot**. Paste English text and select **Fill empty fields**, or choose a PNG, JPEG or WebP image (up to 10 MB), or paste a screenshot into the text box. Screenshot text is read locally and suggestions are filled automatically. Review and correct the form before saving; missing or ambiguous values stay empty. The parser handles common labelled fields and some job-board headings, not every advert layout. It does not infer submission status or application dates. Date strings such as `05/06/2027` are left for manual entry because their month/day order is ambiguous.
+- The screenshot and pasted/recognised description are not saved with the application or sent elsewhere. Only the fields you choose to save are kept. Tesseract.js, its English OCR model and browser runtime are included locally (about 14 MB); no external OCR service is used. First loading the app caches these assets for offline use when the browser permits it. After upgrading, close older app tabs and reload while online to activate the new cache.
 - Optional details: location, employment type (Full-time, Part-time, Contract, Internship, Freelance), work arrangement (Onsite, Hybrid, Remote), salary/rate, contact details, date applied and stage reached. Suggestions for company and location come only from your saved applications. Salary/rate is free text so currency, ranges and annual/day/hour units stay explicit. Contact details are plain text and are never contacted automatically.
 - Switch between checklist cards and a horizontally scrollable tracker table. Both edit the same records. Search covers company, role, location, stage and contact; combine it with status, job type and work arrangement filters. Sort by deadline, creation date, company or date applied. View and filter selections reset on reload.
 - All seven checklist steps remain available at every stage. The first checked step starts progress. Checking Submit application marks an active application Submitted; unchecking it while Submitted returns it to In progress.
@@ -55,6 +57,8 @@ Records add optional `location`, `jobType`, `workMode`, `salary`, `contact`, `st
 index.html          Accessible app shell and modal forms
 src/app.js          Rendering, interactions and persistence error feedback
 src/domain.js       Checklist rules, date logic and storage validation
+src/description-parser.js  Local job-description field suggestions
+vendor/ocr/         Locally bundled OCR worker, browser engines, model and licences
 src/styles.css      Responsive desktop and mobile layouts
 sw.js               Offline app-shell cache (no application data)
 scripts/serve.js    Loopback-only static preview server
@@ -72,6 +76,6 @@ flowchart LR
 
 ## Verification and scope
 
-Automated checks cover date/DST boundaries, URL validation, document eligibility, status/checklist transitions, storage round trips, version 1 migration without overwriting source storage, optional metadata validation, invalid schema preservation, write failures, combined filtering/sorting and serving app assets. Desktop in-app browser checks covered creation, editing, overdue display, document completion, submission transitions, search, reload persistence and reloading with the server stopped. Native controls, visible labels, focus indicators, dialog focus handling and reduced-motion styling are included. The tracker update was checked with synthetic data for existing-record preservation, optional details, status/stage independence, table controls, combined filters, new-field search and reload persistence. A 390px browser frame was used to inspect the responsive editor; this is not a physical-device test. Physical mobile devices and a full assistive-technology audit have not been tested.
+Automated checks cover job-description parsing and ambiguous dates, date/DST boundaries, URL validation, document eligibility, status/checklist transitions, storage round trips, version 1 migration without overwriting source storage, optional metadata validation, invalid schema preservation, write failures, combined filtering/sorting and serving app assets. Desktop in-app browser checks covered creation, editing, overdue display, document completion, submission transitions, search, reload persistence and reloading with the server stopped. Native controls, visible labels, focus indicators, dialog focus handling and reduced-motion styling are included. The tracker update was checked with synthetic data for existing-record preservation, optional details, status/stage independence, table controls, combined filters, new-field search and reload persistence. A 390px browser frame was used to inspect the responsive editor; this is not a physical-device test. For description prefill, desktop browser testing used synthetic pasted text and a synthetic screenshot; screenshot OCR and pasted text were also exercised after stopping the local server and reloading from the offline cache. Clipboard-image paste itself, physical mobile devices and a full assistive-technology audit have not been tested.
 
 This version leaves reminders, document uploads, interview notes, CV libraries, analytics, calendar integrations, cross-device accounts and backup import for later. Source is maintained in the private GitHub repository. No paid service or deployment has been created.
