@@ -23,8 +23,8 @@ These screenshots use fictional example applications.
 Requires Node.js 22 or newer. No package installation or build is needed.
 
 ```sh
-git clone https://github.com/SadaqueKhanProjects/job-application-checklist.git
-cd job-application-checklist
+git clone https://github.com/SadaqueKhanProjects/job-application-checklist-web-app.git
+cd job-application-checklist-web-app
 npm start
 ```
 
