@@ -1,3 +1,4 @@
+import { extractJobDetails } from './description-parser.js';
 import {
   STATUSES, JOB_TYPES, WORK_MODES, TASKS, STORAGE_KEY, SCHEMA_VERSION, DETAIL_DEFAULTS,
   active, missingDocuments, safeUrl, localDate, dayDifference, validDate,
@@ -9,6 +10,7 @@ const escape = value => String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;
 const statusClass = status => status.toLowerCase().replaceAll(' ', '-');
 const dateLabel = value => new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(`${value}T12:00:00`));
 let applications = [], editingId = null, deletingId = null, storageAvailable = true, view = 'cards';
+let recognitionGeneration = 0;
 
 function notify(message, error = false) {
   const notice = $('#notice');
@@ -132,6 +134,11 @@ function openForm(app = null) {
   editingId = app?.id || null;
   const form = $('#application-form');
   form.reset();
+  recognitionGeneration++;
+  $('#description-prefill').open = false;
+  $('#description-status').textContent = '';
+  $('#description-image').value = '';
+  $('#extract-description').disabled = false;
   form.elements.appliedOn.max = localDate();
   $('#dialog-title').textContent = app ? 'Edit application' : 'Add an application';
   if (app) for (const field of ['company', 'title', 'deadline', 'link', 'status', ...Object.keys(DETAIL_DEFAULTS)]) form.elements[field].value = app[field];
@@ -139,6 +146,65 @@ function openForm(app = null) {
   $('#application-dialog').showModal();
   form.elements.company.focus();
 }
+const MAX_SCREENSHOT_BYTES = 10 * 1024 * 1024;
+function fillFromDescription() {
+  const form = $('#application-form');
+  const text = $('#description-text').value;
+  if (!text.trim()) { $('#description-status').textContent = 'Paste a job description or choose a screenshot first.'; return; }
+  const details = extractJobDetails(text);
+  const filled = [];
+  for (const [key, value] of Object.entries(details)) {
+    const field = form.elements[key];
+    // Only fill blanks: the person may already have corrected or entered a value.
+    if (field && !field.value) { field.value = value; filled.push(key); }
+  }
+  const missing = [['company', 'company'], ['title', 'job title'], ['deadline', 'deadline'], ['link', 'job link']].filter(([key]) => !form.elements[key].value).map(([, label]) => label);
+  const count = filled.length;
+  $('#description-status').textContent = count ? `Filled ${count} field${count === 1 ? '' : 's'}. Review the suggestions.${missing.length ? ` Still needed: ${missing.join(', ')}.` : ''}` : `No empty fields could be filled. ${missing.length ? `Still needed: ${missing.join(', ')}.` : 'Review the information below.'}`;
+}
+async function readScreenshot(file) {
+  const status = $('#description-status');
+  const generation = ++recognitionGeneration;
+  if (!file || !['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) { $('#description-image').value = ''; $('#extract-description').disabled = false; status.textContent = 'Choose a PNG, JPEG or WebP screenshot.'; return; }
+  if (file.size > MAX_SCREENSHOT_BYTES) { $('#description-image').value = ''; $('#extract-description').disabled = false; status.textContent = 'The screenshot is too large. Choose an image under 10 MB.'; return; }
+  const description = $('#description-text');
+  const original = description.value;
+  $('#extract-description').disabled = true;
+  status.textContent = 'Reading screenshot on this device…';
+  let worker;
+  try {
+    const { default: tesseract } = await import('../vendor/ocr/tesseract.esm.min.js');
+    worker = await tesseract.createWorker('eng', 1, {
+      workerPath: new URL('../vendor/ocr/worker.min.js', import.meta.url).href,
+      corePath: new URL('../vendor/ocr/core', import.meta.url).href,
+      langPath: new URL('../vendor/ocr/lang', import.meta.url).href,
+      workerBlobURL: false,
+      cacheMethod: 'none',
+      logger: progress => { if (generation === recognitionGeneration && progress.status === 'recognizing text') status.textContent = `Reading screenshot on this device… ${Math.round(progress.progress * 100)}%`; },
+    });
+    const result = await worker.recognize(file);
+    if (generation !== recognitionGeneration || !$('#application-dialog').open) return;
+    if (description.value !== original) { status.textContent = 'The description changed while the screenshot was being read. Your text was kept; choose the screenshot again if needed.'; return; }
+    const recognised = result.data.text.trim();
+    if (!recognised) { status.textContent = 'No text was recognised. Try a clearer screenshot or paste the job description.'; return; }
+    if (recognised.length > description.maxLength) { status.textContent = 'The screenshot contains too much text. Try a smaller screenshot or paste a shorter description.'; return; }
+    description.value = recognised;
+    fillFromDescription();
+  } catch {
+    if (generation === recognitionGeneration) status.textContent = 'Could not read this screenshot. Try a clearer image, or paste the job description.';
+  } finally {
+    if (worker) await worker.terminate().catch(() => {});
+    if (generation === recognitionGeneration) { $('#extract-description').disabled = false; $('#description-image').value = ''; }
+  }
+}
+$('#extract-description').addEventListener('click', fillFromDescription);
+$('#description-image').addEventListener('change', event => { const file = event.target.files[0]; if (file) readScreenshot(file); });
+$('#description-text').addEventListener('paste', event => {
+  const image = [...(event.clipboardData?.items || [])].find(item => item.kind === 'file' && item.type.startsWith('image/'));
+  if (image) { event.preventDefault(); readScreenshot(image.getAsFile()); }
+});
+$('#application-dialog').addEventListener('close', () => { recognitionGeneration++; });
+
 $('#add-application').addEventListener('click', () => openForm());
 for (const id of ['close-dialog', 'cancel-dialog']) $(`#${id}`).addEventListener('click', () => $('#application-dialog').close());
 $('#cancel-delete').addEventListener('click', () => $('#delete-dialog').close());

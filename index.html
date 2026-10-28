@@ -30,6 +30,15 @@
   </main>
   <dialog id="application-dialog" aria-labelledby="dialog-title">
     <form id="application-form"><div class="dialog-heading"><div><p class="eyebrow">MAKE YOUR NEXT MOVE</p><h2 id="dialog-title">Add an application</h2></div><button type="button" class="icon-button" id="close-dialog" aria-label="Close">×</button></div>
+      <details id="description-prefill" class="description-prefill">
+        <summary>Fill details from a job description or screenshot</summary>
+        <p>Paste a job description below, or choose or paste a screenshot into the text box. Review the suggestions before saving.</p>
+        <label for="description-text">Job description or screenshot text</label>
+        <textarea id="description-text" rows="6" maxlength="100000" placeholder="Paste the job description or a screenshot here…"></textarea>
+        <div class="prefill-actions"><label class="secondary file-picker">Choose screenshot<input id="description-image" type="file" accept="image/png,image/jpeg,image/webp" aria-label="Choose screenshot"></label><button id="extract-description" type="button" class="secondary">Fill empty fields</button></div>
+        <p id="description-status" role="status" aria-live="polite"></p>
+        <p class="field-help">English text is read on this device. Screenshots and descriptions are not saved with your application.</p>
+      </details>
       <label>Company name<input name="company" list="company-suggestions" required maxlength="100" placeholder="e.g. Acme Studio" autocomplete="organization"></label>
       <label>Job title<input name="title" required maxlength="150" placeholder="e.g. Product Designer"></label>
       <div class="form-row"><label>Application deadline<input name="deadline" type="date" required></label><label>Current status<select name="status"></select></label></div>
