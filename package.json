@@ -1,0 +1,12 @@
+{
+  "name": "job-application-checklist",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node scripts/serve.js",
+    "test": "node --test",
+    "check": "node --check src/app.js && node --check src/domain.js && node --check scripts/serve.js && node --check sw.js"
+  }
+}
