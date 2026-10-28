@@ -1,0 +1,4 @@
+# Bundled upstream OCR distributions are generated; review the pinned provenance and licences instead of minified diffs.
+vendor/ocr/*.min.js -diff linguist-vendored=true
+vendor/ocr/core/*.wasm.js -diff linguist-vendored=true
+vendor/ocr/lang/*.gz -diff linguist-vendored=true
