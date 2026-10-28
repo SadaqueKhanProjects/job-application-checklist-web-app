@@ -42,6 +42,10 @@ Run from the project directory:
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for branches, PRs and CI.
 
+## Cost
+
+The app, local OCR and local tests use free tools without paid services. GitHub-hosted CI on a private repository uses the account's shared included allowance; additional usage can be billed unless an effective spending block is in place. CI may stop when that allowance is exhausted. See [GitHub Actions billing](https://docs.github.com/en/actions/concepts/billing-and-usage) and the project's [free-only guidance](AGENTS.md).
+
 ## Architecture
 
 ```mermaid
