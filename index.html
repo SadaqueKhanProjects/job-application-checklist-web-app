@@ -22,22 +22,30 @@
       <article class="focus-panel"><div class="panel-heading"><h2><span aria-hidden="true">↗</span> Recently submitted</h2><span class="small-label">LATEST 3</span></div><div id="recent"></div></article>
     </section>
     <section class="applications-section" aria-labelledby="applications-heading">
-      <div class="section-heading"><div><h2 id="applications-heading">Your applications <span id="total" class="count"></span></h2><p>Big opportunities start with small steps.</p></div><div class="view-label"><span aria-hidden="true">☷</span> Checklist view</div></div>
-      <div class="toolbar"><label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Search company or role…" aria-label="Search company or role"></label><label class="filter-label">Status <select id="status-filter"><option value="all">All statuses</option></select></label><label class="filter-label">Sort <select id="sort"><option value="deadline">Deadline: soonest</option><option value="newest">Recently added</option><option value="company">Company A–Z</option></select></label></div>
-      <div id="applications" class="applications"></div>
+      <div class="section-heading"><div><h2 id="applications-heading">Your applications <span id="total" class="count"></span></h2><p>Big opportunities start with small steps.</p></div><div class="view-switch" role="group" aria-label="Application view"><button id="cards-view" type="button" aria-pressed="true">Checklist</button><button id="table-view" type="button" aria-pressed="false">Table</button></div></div>
+      <div class="toolbar"><label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Search company, role, location or contact…" aria-label="Search applications"></label><label class="filter-label">Status <select id="status-filter"><option value="all">All statuses</option></select></label><label class="filter-label">Job type <select id="job-type-filter"><option value="all">All job types</option></select></label><label class="filter-label">Working <select id="work-mode-filter"><option value="all">All arrangements</option></select></label><label class="filter-label">Sort <select id="sort"><option value="deadline">Deadline: soonest</option><option value="newest">Recently added</option><option value="company">Company A–Z</option><option value="applied">Date applied: newest</option></select></label></div>
+      <p id="visible-count" class="results-count" role="status"></p><div id="applications" class="applications"></div>
     </section>
     <footer><span><span aria-hidden="true">▣</span> Your search stays yours.</span><p>Stored in this browser. No accounts, no tracking. Clearing browser data removes your applications.</p><button id="export" class="text-button">Export a backup</button></footer>
   </main>
   <dialog id="application-dialog" aria-labelledby="dialog-title">
     <form id="application-form"><div class="dialog-heading"><div><p class="eyebrow">MAKE YOUR NEXT MOVE</p><h2 id="dialog-title">Add an application</h2></div><button type="button" class="icon-button" id="close-dialog" aria-label="Close">×</button></div>
-      <label>Company name<input name="company" required maxlength="100" placeholder="e.g. Acme Studio" autocomplete="organization"></label>
+      <label>Company name<input name="company" list="company-suggestions" required maxlength="100" placeholder="e.g. Acme Studio" autocomplete="organization"></label>
       <label>Job title<input name="title" required maxlength="150" placeholder="e.g. Product Designer"></label>
       <div class="form-row"><label>Application deadline<input name="deadline" type="date" required></label><label>Current status<select name="status"></select></label></div>
       <label>Job link<input name="link" type="url" required maxlength="2000" placeholder="https://…"><span class="field-help">Use a full link starting with https:// or http://</span></label>
+      <fieldset class="additional-details"><legend>Application details <span>optional</span></legend>
+        <div class="form-row"><label>Location<input name="location" list="location-suggestions" maxlength="150" placeholder="e.g. London"></label><label>Work arrangement<select name="workMode"><option value="">Not specified</option></select></label></div>
+        <div class="form-row"><label>Job type<select name="jobType"><option value="">Not specified</option></select></label><label>Salary or rate<input name="salary" maxlength="150" placeholder="e.g. £50,000–£60,000 / year"></label></div>
+        <div class="form-row"><label>Date applied<input name="appliedOn" type="date"><span class="field-help">Filled when submitted; correct it here if needed.</span></label><label>Stage reached<input name="stageReached" list="stage-suggestions" maxlength="100" placeholder="e.g. Final interview"><span class="field-help">Keep the stage reached even after rejection.</span></label></div>
+        <label>Contact details<textarea name="contact" maxlength="1000" rows="3" placeholder="Recruiter or hiring contact, email, phone…"></textarea></label>
+      </fieldset>
       <p id="form-error" role="alert" class="error" hidden></p>
       <div class="dialog-actions"><button type="button" class="secondary" id="cancel-dialog">Cancel</button><button class="primary" type="submit">Save application</button></div>
     </form>
   </dialog>
+  <datalist id="company-suggestions"></datalist><datalist id="location-suggestions"></datalist>
+  <datalist id="stage-suggestions"><option value="Application"><option value="Recruiter screen"><option value="Assessment"><option value="Interview"><option value="Final interview"><option value="Offer"></datalist>
   <dialog id="delete-dialog" aria-labelledby="delete-title"><h2 id="delete-title">Delete this application?</h2><p id="delete-description"></p><p>This removes the application and its checklist from this browser.</p><p id="delete-error" class="error" role="alert" hidden></p><div class="dialog-actions"><button id="cancel-delete" class="secondary">Keep application</button><button id="confirm-delete" class="danger">Delete application</button></div></dialog>
 </body>
 </html>
