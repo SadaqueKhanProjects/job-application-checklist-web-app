@@ -48,13 +48,13 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for branches, PRs and CI.
 
 ## Hosting and CI/CD
 
-GitHub Pages deployment is prepared but not yet activated. The proposed free setup requires this repository to be public, with owner approval. PRs run tests; successful `main` changes publish the website. No paid runners, cache or uploaded Actions artifacts are used. See [hosting setup](docs/hosting.md).
+GitHub Pages deployment is prepared but not yet activated. The repository is public with owner approval. PRs run tests; successful `main` changes publish the website. No paid runners, cache or uploaded Actions artifacts are used. See [hosting setup](docs/hosting.md).
 
 Existing localhost data does not automatically appear on the hosted address: browser storage is separate for each origin.
 
 ## Cost
 
-The app, local OCR and local tests use free tools without paid services. GitHub-hosted CI on a private repository uses the account's shared included allowance; additional usage can be billed unless an effective spending block is in place. CI may stop when that allowance is exhausted. See [GitHub Actions billing](https://docs.github.com/en/actions/concepts/billing-and-usage) and the project's [free-only guidance](AGENTS.md).
+The app, local OCR and local tests use free tools. This public repository uses standard free GitHub Actions runners and GitHub Pages, without cache or artifact uploads. Workflows skip private repositories; paid runners and services are not used. See [GitHub Actions billing](https://docs.github.com/en/actions/concepts/billing-and-usage) and the project's [free-only guidance](AGENTS.md).
 
 ## Architecture
 

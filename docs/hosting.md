@@ -2,7 +2,7 @@
 
 ## Status
 
-Prepared, locally tested, and not activated. Repository visibility and Pages settings are unchanged. Owner approval is required before exposing this private repository and its history.
+The owner approved making the repository and its history public. The repository is now public; activation and live verification are in progress.
 
 ## Free setup
 
@@ -17,7 +17,7 @@ The workflow publishes a generated `gh-pages` branch and explicitly requests a P
 3. Complete the pending UI, Excel export and hosting PRs in dependency order. Use their local test results and public-repository CI; do not run the older private workflows before the visibility change.
 4. Create `gh-pages` from only the contents of `npm run build:site` output (`.site/`), including `.nojekyll`. Do not copy the working directory wholesale.
 5. Configure Pages to deploy from the `gh-pages` branch root (`build_type: legacy`). Enable HTTPS.
-6. Configure the `github-pages` environment to allow deployment from `main`. Set repository Actions variable `PAGES_ENABLED=true`.
+6. Configure the `github-pages` environment to allow deployment from `main` and `gh-pages` (the branch used by the Pages build). Set repository Actions variable `PAGES_ENABLED=true`.
 7. Run **Publish website** on `main`. Verify that the Pages build completes for the generated commit and check the returned URL, including screenshot OCR, Excel export and offline assets.
 
 Expected address after activation: `https://SadaqueKhanProjects.github.io/job-application-checklist-web-app/`. This is not yet a confirmed live URL.
