@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#214d42">
+  <meta name="theme-color" content="#0f766e">
   <meta name="description" content="A calmer job search. Track applications, deadlines and every next step, privately on your device.">
   <title>Job Application Checklist</title>
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
@@ -13,23 +13,25 @@
   <a class="skip" href="#main">Skip to content</a>
   <header class="topbar"><a class="brand" href="./"><span class="brand-icon">✓</span> Job Application Checklist</a><span class="local-label"><span></span> Saved on this device</span></header>
   <main id="main">
-    <section class="intro"><div><p class="eyebrow">YOUR NEXT CHAPTER</p><h1>A little progress.<br> A step closer.</h1><p class="subtitle">Every opportunity, every next step. All in one place.</p></div><button class="primary" id="add-application"><span aria-hidden="true">＋</span> Add application</button></section>
+    <section class="intro"><div><p class="eyebrow">YOUR JOB SEARCH</p><h1>Make your next move.</h1><p class="subtitle">Prioritise deadlines. Finish the details. Keep moving forward.</p></div><button class="primary" id="add-application"><span aria-hidden="true">＋</span> Add application</button></section>
     <div id="notice" role="status" hidden></div>
-    <section aria-label="Application overview" id="stats" class="stats"></section>
+    <div class="workspace-heading"><h2>Focus for today</h2><span id="attention-summary"></span></div>
     <section class="focus-grid" aria-label="Your priorities">
-      <article class="focus-panel"><div class="panel-heading"><h2><span aria-hidden="true">◷</span> Coming up</h2><span class="small-label">NEXT 7 DAYS</span></div><div id="due-soon"></div></article>
+      <article class="focus-panel"><div class="panel-heading"><h2><span aria-hidden="true">◷</span> Deadlines & overdue</h2><span class="small-label">UP TO 7 DAYS</span></div><div id="due-soon"></div></article>
       <article class="focus-panel"><div class="panel-heading"><h2><span aria-hidden="true">▤</span> Documents to finish</h2><span id="documents-count" class="count"></span></div><div id="documents"></div></article>
       <article class="focus-panel"><div class="panel-heading"><h2><span aria-hidden="true">↗</span> Recently submitted</h2><span class="small-label">LATEST 3</span></div><div id="recent"></div></article>
     </section>
+    <details class="pipeline"><summary>Application pipeline <span>View totals by status</span></summary><section aria-label="Application overview" id="stats" class="stats"></section></details>
     <section class="applications-section" aria-labelledby="applications-heading">
-      <div class="section-heading"><div><h2 id="applications-heading">Your applications <span id="total" class="count"></span></h2><p>Big opportunities start with small steps.</p></div><div class="view-switch" role="group" aria-label="Application view"><button id="cards-view" type="button" aria-pressed="true">Checklist</button><button id="table-view" type="button" aria-pressed="false">Table</button></div></div>
+      <div class="section-heading"><div><h2 id="applications-heading" tabindex="-1">Your applications <span id="total" class="count"></span></h2><p>Choose an application and take the next step.</p></div><div class="view-switch" role="group" aria-label="Application view"><button id="cards-view" type="button" aria-pressed="true">Checklist</button><button id="table-view" type="button" aria-pressed="false">Table</button></div></div>
+      <div class="quick-filters" role="group" aria-label="Priority filters"><button data-action="focus" data-focus="all" aria-pressed="true">All applications</button><button data-action="focus" data-focus="overdue" aria-pressed="false">Overdue</button><button data-action="focus" data-focus="due" aria-pressed="false">Due in 7 days</button><button data-action="focus" data-focus="documents" aria-pressed="false">Missing documents</button></div>
       <div class="toolbar"><label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Search company, role, location or contact…" aria-label="Search applications"></label><label class="filter-label">Status <select id="status-filter"><option value="all">All statuses</option></select></label><label class="filter-label">Job type <select id="job-type-filter"><option value="all">All job types</option></select></label><label class="filter-label">Working <select id="work-mode-filter"><option value="all">All arrangements</option></select></label><label class="filter-label">Sort <select id="sort"><option value="deadline">Deadline: soonest</option><option value="newest">Recently added</option><option value="company">Company A–Z</option><option value="applied">Date applied: newest</option></select></label></div>
-      <p id="visible-count" class="results-count" role="status"></p><div id="applications" class="applications"></div>
+      <div class="results-bar"><p id="visible-count" class="results-count" role="status"></p><button class="text-button" data-action="clear">Reset filters</button></div><div id="applications" class="applications"></div>
     </section>
     <footer><span><span aria-hidden="true">▣</span> Your search stays yours.</span><p>Stored in this browser. No accounts, no tracking. Clearing browser data removes your applications.</p><button id="export" class="text-button">Export a backup</button></footer>
   </main>
   <dialog id="application-dialog" aria-labelledby="dialog-title">
-    <form id="application-form"><div class="dialog-heading"><div><p class="eyebrow">MAKE YOUR NEXT MOVE</p><h2 id="dialog-title">Add an application</h2></div><button type="button" class="icon-button" id="close-dialog" aria-label="Close">×</button></div>
+    <form id="application-form"><div class="dialog-heading"><div><p class="eyebrow">APPLICATION DETAILS</p><h2 id="dialog-title">Add an application</h2></div><button type="button" class="icon-button" id="close-dialog" aria-label="Close">×</button></div>
       <details id="description-prefill" class="description-prefill">
         <summary>Fill details from a job description or screenshot</summary>
         <p>Paste a job description below, or choose or paste a screenshot into the text box. Review the suggestions before saving.</p>

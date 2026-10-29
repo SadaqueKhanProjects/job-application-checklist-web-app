@@ -1,6 +1,6 @@
 import { extractJobDetails } from './description-parser.js';
 import {
-  STATUSES, JOB_TYPES, WORK_MODES, TASKS, STORAGE_KEY, SCHEMA_VERSION, DETAIL_DEFAULTS,
+  nextStep, STATUSES, JOB_TYPES, WORK_MODES, TASKS, STORAGE_KEY, SCHEMA_VERSION, DETAIL_DEFAULTS,
   active, missingDocuments, safeUrl, localDate, dayDifference, validDate,
   readApplications, saveApplications, updateStatus, updateTask, filterApplications,
 } from './domain.js';
@@ -9,7 +9,7 @@ const $ = selector => document.querySelector(selector);
 const escape = value => String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 const statusClass = status => status.toLowerCase().replaceAll(' ', '-');
 const dateLabel = value => new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(`${value}T12:00:00`));
-let applications = [], editingId = null, deletingId = null, storageAvailable = true, view = 'cards';
+let applications = [], editingId = null, deletingId = null, storageAvailable = true, view = 'cards', focus = 'all';
 let recognitionGeneration = 0;
 
 function notify(message, error = false) {
@@ -65,6 +65,8 @@ function renderDashboard() {
   const recent = applications.filter(app => app.appliedOn).sort((a, b) => b.appliedOn.localeCompare(a.appliedOn) || (b.submittedAt || '').localeCompare(a.submittedAt || '')).slice(0, 3);
   $('#recent').innerHTML = recent.map(app => priorityRow(app, `<span class="submitted-label">${escape(dateLabel(app.appliedOn))}</span>`)).join('') || '<p class="panel-empty">Your next opportunity is waiting.<br>Submitted applications will appear here.</p>';
   $('#total').textContent = applications.length;
+  const overdue = due.filter(app => dayDifference(app.deadline) < 0).length;
+  $('#attention-summary').textContent = overdue ? `${overdue} overdue · ${due.length - overdue} due this week` : `${due.length} due this week`;
 }
 function statusControl(app) {
   return `<span class="status-select ${statusClass(app.status)}"><select aria-label="Status for ${escape(app.title)} at ${escape(app.company)}" data-action="status" data-id="${escape(app.id)}">${STATUSES.map(status => `<option${status === app.status ? ' selected' : ''}>${status}</option>`).join('')}</select></span>`;
@@ -75,20 +77,21 @@ function detailList(app) {
     ['Salary / rate', app.salary], ['Date applied', app.appliedOn && dateLabel(app.appliedOn)], ['Stage reached', app.stageReached],
   ].filter(([, value]) => value);
   if (!pairs.length && !app.contact) return '';
-  return `<div class="application-details"><dl>${pairs.map(([key, value]) => `<div><dt>${key}</dt><dd>${escape(value)}</dd></div>`).join('')}</dl>${app.contact ? `<details class="contact-details"><summary>Contact details</summary><p>${escape(app.contact)}</p></details>` : ''}</div>`;
+  return `<details class="application-details"><summary>Job & contact details</summary><dl>${pairs.map(([key, value]) => `<div><dt>${key}</dt><dd>${escape(value)}</dd></div>`).join('')}</dl>${app.contact ? `<details class="contact-details"><summary>Contact details</summary><p>${escape(app.contact)}</p></details>` : ''}</details>`;
 }
 function actionButtons(app) {
-  return `<button data-action="edit" data-id="${escape(app.id)}" class="text-button">Edit<span class="sr-only"> ${escape(app.company)}</span></button><button data-action="delete" data-id="${escape(app.id)}" class="icon-button delete-button" aria-label="Delete ${escape(app.title)} at ${escape(app.company)}">×</button>`;
+  return `<button data-action="edit" data-id="${escape(app.id)}" class="text-button">Edit<span class="sr-only"> ${escape(app.company)}</span></button><button data-action="delete" data-id="${escape(app.id)}" class="text-button delete-button" aria-label="Delete ${escape(app.title)} at ${escape(app.company)}">Delete</button>`;
 }
 function renderCard(app) {
   const complete = app.tasks.filter(Boolean).length;
   return `<article id="application-${escape(app.id)}" class="application-card ${active(app) && dayDifference(app.deadline) < 0 ? 'is-overdue' : ''}" tabindex="-1">
     <div class="card-top"><div class="company-avatar">${escape(app.company.slice(0, 2).toUpperCase())}</div><div class="card-title"><h3>${escape(app.title)}</h3><p>${escape(app.company)}</p></div>${statusControl(app)}</div>
     <div class="card-meta">${deadlineMarkup(app)}<a href="${escape(safeUrl(app.link))}" target="_blank" rel="noopener noreferrer">View job <span aria-hidden="true">↗</span></a></div>
+    <p class="next-step"><span>Next step</span><strong>${escape(nextStep(app))}</strong></p>
     ${detailList(app)}
     <div class="progress-heading"><span>Application checklist</span><span>${complete} of ${TASKS.length}</span></div><progress max="${TASKS.length}" value="${complete}" aria-label="${escape(app.company)} checklist progress"></progress>
     <fieldset class="checklist"><legend class="sr-only">Checklist for ${escape(app.title)} at ${escape(app.company)}</legend>${TASKS.map((task, i) => `<label class="task ${app.tasks[i] ? 'complete' : ''}"><input type="checkbox" data-action="task" data-id="${escape(app.id)}" data-index="${i}"${app.tasks[i] ? ' checked' : ''}><span>${task}</span></label>`).join('')}</fieldset>
-    <div class="card-bottom"><span>${complete === TASKS.length ? 'Every step complete. Well done!' : complete === 0 ? 'A fresh start. You’ve got this.' : 'One step at a time. Keep going.'}</span>${actionButtons(app)}</div>
+    <div class="card-bottom"><span>${complete === TASKS.length ? 'Checklist complete' : `${TASKS.length - complete} steps remaining`}</span>${actionButtons(app)}</div>
   </article>`;
 }
 function renderTable(filtered) {
@@ -111,14 +114,15 @@ function render() {
   renderSuggestions();
   const filtered = filterApplications(applications, {
     query: $('#search').value, status: $('#status-filter').value,
-    jobType: $('#job-type-filter').value, workMode: $('#work-mode-filter').value, sort: $('#sort').value,
+    jobType: $('#job-type-filter').value, workMode: $('#work-mode-filter').value, sort: $('#sort').value, focus,
   });
+  document.querySelectorAll('[data-action="focus"]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.focus === focus)));
   $('#cards-view').setAttribute('aria-pressed', String(view === 'cards'));
   $('#table-view').setAttribute('aria-pressed', String(view === 'table'));
   $('#visible-count').textContent = `${filtered.length} of ${applications.length} application${applications.length === 1 ? '' : 's'} shown`;
   $('#applications').className = view === 'table' ? 'applications table-view' : 'applications';
   $('#applications').innerHTML = filtered.length ? (view === 'table' ? renderTable(filtered) : filtered.map(renderCard).join('')) :
-    `<div class="empty-state"><div class="empty-icon" aria-hidden="true">✓</div><h3>${applications.length ? 'No matching applications' : 'Your next chapter starts here'}</h3><p>${applications.length ? 'Try a different search or filter.' : 'Add your first opportunity. We’ll help you take it one step at a time.'}</p><button class="${applications.length ? 'secondary' : 'primary'}" data-action="${applications.length ? 'clear' : 'add'}">${applications.length ? 'Clear filters' : '＋ Add your first application'}</button></div>`;
+    `<div class="empty-state"><div class="empty-icon" aria-hidden="true">✓</div><h3>${applications.length ? 'No matching applications' : 'Track your first opportunity'}</h3><p>${applications.length ? 'Try a different search or filter.' : 'Add a job link and deadline, or fill details from a job description.'}</p><button class="${applications.length ? 'secondary' : 'primary'}" data-action="${applications.length ? 'clear' : 'add'}">${applications.length ? 'Clear filters' : '＋ Add your first application'}</button></div>`;
 }
 function fillOptions(selector, values) {
   for (const value of values) $(selector).add(new Option(value, value));
@@ -221,13 +225,14 @@ $('#application-form').addEventListener('submit', event => {
   const app = updateStatus({ ...(existing || { ...DETAIL_DEFAULTS, id: crypto.randomUUID(), tasks: TASKS.map(() => false), createdAt: new Date().toISOString(), submittedAt: null }), ...fields }, fields.status);
   if (commit(existing ? applications.map(item => item.id === app.id ? app : item) : [...applications, app])) {
     $('#application-dialog').close();
-    notify(existing ? 'Application updated.' : 'Application added. Your next chapter starts here.');
+    notify(existing ? 'Application updated.' : 'Application added.');
   }
 });
 $('#confirm-delete').addEventListener('click', () => {
   if (commit(applications.filter(app => app.id !== deletingId))) { $('#delete-dialog').close(); notify('Application deleted.'); }
 });
 function clearFilters() {
+  focus = 'all';
   $('#search').value = '';
   for (const selector of ['#status-filter', '#job-type-filter', '#work-mode-filter']) $(selector).value = 'all';
 }
@@ -236,7 +241,7 @@ function showChecklist(id, clear = false) {
   view = 'cards';
   render();
   const card = document.getElementById(`application-${id}`);
-  card?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  card?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'center' });
   card?.focus({ preventScroll: true });
 }
 document.addEventListener('click', event => {
@@ -244,9 +249,10 @@ document.addEventListener('click', event => {
   if (!button) return;
   const { action, id, status } = button.dataset;
   const app = applications.find(item => item.id === id);
+  if (action === 'focus') { clearFilters(); focus = button.dataset.focus; render(); }
   if (action === 'add') openForm();
   if (action === 'clear') { clearFilters(); render(); }
-  if (action === 'filter') { clearFilters(); $('#status-filter').value = status; render(); $('#applications-heading').scrollIntoView({ behavior: 'smooth' }); }
+  if (action === 'filter') { clearFilters(); $('#status-filter').value = status; render(); $('#applications-heading').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' }); }
   if (action === 'edit' && app) openForm(app);
   if (action === 'delete' && app) {
     deletingId = id;
@@ -271,6 +277,9 @@ document.addEventListener('change', event => {
     if (action === 'status') replacement.value = applications.find(item => item.id === id).status;
     else replacement.checked = applications.find(item => item.id === id).tasks[Number(index)];
     replacement.focus({ preventScroll: true });
+  } else {
+    $('#applications-heading').focus({ preventScroll: true });
+    notify('Application updated. It no longer matches the current filters.');
   }
 });
 $('#search').addEventListener('input', render);
