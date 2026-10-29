@@ -1,3 +1,4 @@
+import { exportApplicationsXlsx, XLSX_MIME } from './excel-export.js';
 import { extractJobDetails } from './description-parser.js';
 import {
   nextStep, STATUSES, JOB_TYPES, WORK_MODES, TASKS, STORAGE_KEY, SCHEMA_VERSION, DETAIL_DEFAULTS,
@@ -286,6 +287,20 @@ $('#search').addEventListener('input', render);
 for (const selector of ['#status-filter', '#job-type-filter', '#work-mode-filter', '#sort']) $(selector).addEventListener('change', render);
 $('#cards-view').addEventListener('click', () => { view = 'cards'; render(); });
 $('#table-view').addEventListener('click', () => { view = 'table'; render(); });
+$('#export-excel').addEventListener('click', () => {
+  if (!storageAvailable) { notify('Excel export is unavailable while saved data cannot be read. Existing storage has been preserved.', true); return; }
+  try {
+    const blob = new Blob([exportApplicationsXlsx(applications)], { type: XLSX_MIME });
+    const url = URL.createObjectURL(blob), link = document.createElement('a');
+    link.href = url;
+    link.download = `job-applications-${localDate()}.xlsx`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    notify(`Excel export downloaded with all ${applications.length} application${applications.length === 1 ? '' : 's'}. It includes contact details and is not encrypted. Changes in Excel do not sync back to this app.`);
+  } catch {
+    notify('Could not create the Excel export. Your saved applications have not changed. Try again with more browser memory available.', true);
+  }
+});
 $('#export').addEventListener('click', () => {
   if (!storageAvailable) { notify('Export is unavailable while saved data cannot be read. Existing storage has been preserved.', true); return; }
   const blob = new Blob([JSON.stringify({ version: SCHEMA_VERSION, applications }, null, 2)], { type: 'application/json' });

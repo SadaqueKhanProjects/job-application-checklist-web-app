@@ -24,6 +24,15 @@ npm start
 
 Open [http://127.0.0.1:4173](http://127.0.0.1:4173). The terminal displays the local URL; leave it running and press `Ctrl+C` to stop. Use the same browser and address to see your saved applications. Opening `index.html` directly is unsupported.
 
+## Export to Excel
+
+Choose **Export all to Excel** beside the application view controls. The `.xlsx` download contains:
+
+- **Applications:** all saved jobs, including status, stage, dates, salary, contacts, deadline and clickable job link.
+- **Checklist:** each job's seven tasks, marked Done or To do.
+
+Both sheets have filters and frozen headers. Dropdowns and deadline highlighting help when reviewing the file in Excel. All applications are included, even when the app is filtered. Progress and next steps are snapshots at export; Excel edits do not sync back. The file includes contact details and is unencrypted. Export runs locally without extra services or dependencies.
+
 ## Commands
 
 Run from the project directory:
@@ -47,6 +56,8 @@ flowchart LR
     User --> UI[Browser UI]
     UI --> Rules[Application rules]
     Rules --> Storage[Browser localStorage]
+    UI --> Export[Local XLSX exporter]
+    Export --> Download[Excel download]
     UI --> Parser[Description parser]
     UI --> OCR[Local screenshot OCR]
     OCR --> Parser
