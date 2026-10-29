@@ -1,5 +1,7 @@
 # Job Application Checklist
 
+[Open the app](https://sadaquekhanprojects.github.io/job-application-checklist-web-app/)
+
 A browser-only app for tracking job opportunities, deadlines and application checklists. Select **Add application** to enter details or expand the job-description option to paste English text or choose a screenshot. Review suggested fields before saving.
 
 ## Screenshots
@@ -48,7 +50,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for branches, PRs and CI.
 
 ## Hosting and CI/CD
 
-GitHub Pages deployment is prepared but not yet activated. The repository is public with owner approval. PRs run tests; successful `main` changes publish the website. No paid runners, cache or uploaded Actions artifacts are used. See [hosting setup](docs/hosting.md).
+GitHub Pages hosting is active. The repository is public with owner approval. PRs run tests; successful `main` changes publish the website. No paid runners, cache or uploaded Actions artifacts are used. See [hosting setup](docs/hosting.md).
 
 Existing localhost data does not automatically appear on the hosted address: browser storage is separate for each origin.
 

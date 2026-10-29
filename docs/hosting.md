@@ -2,7 +2,9 @@
 
 ## Status
 
-The owner approved making the repository and its history public. The repository is now public; activation and live verification are in progress.
+The owner approved public source and history. The repository is public, HTTPS hosting is active and PAGES_ENABLED is set.
+
+[Open the live application](https://sadaquekhanprojects.github.io/job-application-checklist-web-app/). The homepage, JavaScript, CSS, Excel exporter, service worker and bundled OCR assets were fetched over HTTPS and matched the merged source.
 
 ## Free setup
 
@@ -10,7 +12,7 @@ Use GitHub Free, a public repository, standard `ubuntu-latest` runners and the i
 
 The workflow publishes a generated `gh-pages` branch and explicitly requests a Pages build through GitHub's REST API. It uses no uploaded Actions artifacts, caches, larger runners or paid external services. This avoids relying on shared artifact-storage allowance. GitHub's platform limits still apply; limits may stop builds or serving rather than provide unlimited capacity.
 
-## Activation after approval
+## Setup reference
 
 1. Review tracked files, history, screenshots and commit metadata for material that must stay private. Publishing the source exposes history as well as the website code.
 2. Make this repository public only after explicit owner approval.
@@ -20,7 +22,7 @@ The workflow publishes a generated `gh-pages` branch and explicitly requests a P
 6. Configure the `github-pages` environment to allow deployment from `main` and `gh-pages` (the branch used by the Pages build). Set repository Actions variable `PAGES_ENABLED=true`.
 7. Run **Publish website** on `main`. Verify that the Pages build completes for the generated commit and check the returned URL, including screenshot OCR, Excel export and offline assets.
 
-Expected address after activation: `https://SadaqueKhanProjects.github.io/job-application-checklist-web-app/`. This is not yet a confirmed live URL.
+The setup above is complete. Keep it as a reference for recovery or another deployment.
 
 ## Pipeline
 
