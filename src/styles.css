@@ -1156,3 +1156,6 @@ textarea {
     transition: none !important;
   }
 }
+
+.application-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+@media (max-width: 700px) { .application-tools { width: 100%; justify-content: space-between; } }

@@ -1,5 +1,5 @@
-const CACHE = 'job-checklist-shell-v4';
-const FILES = ['./', './index.html', './src/styles.css', './src/app.js', './src/domain.js', './src/description-parser.js', './icon.svg', './vendor/ocr/tesseract.esm.min.js', './vendor/ocr/worker.min.js', './vendor/ocr/core/tesseract-core-lstm.wasm.js', './vendor/ocr/core/tesseract-core-simd-lstm.wasm.js', './vendor/ocr/core/tesseract-core-relaxedsimd-lstm.wasm.js', './vendor/ocr/lang/eng.traineddata.gz'];
+const CACHE = 'job-checklist-shell-v5';
+const FILES = ['./', './index.html', './src/styles.css', './src/app.js', './src/excel-export.js', './src/domain.js', './src/description-parser.js', './icon.svg', './vendor/ocr/tesseract.esm.min.js', './vendor/ocr/worker.min.js', './vendor/ocr/core/tesseract-core-lstm.wasm.js', './vendor/ocr/core/tesseract-core-simd-lstm.wasm.js', './vendor/ocr/core/tesseract-core-relaxedsimd-lstm.wasm.js', './vendor/ocr/lang/eng.traineddata.gz'];
 self.addEventListener('install', event => { event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(FILES))); });
 self.addEventListener('activate', event => { event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith('job-checklist-shell-') && key !== CACHE).map(key => caches.delete(key)))).then(() => self.clients.claim())); });
 self.addEventListener('fetch', event => {
