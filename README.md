@@ -4,19 +4,13 @@ A browser-only app for tracking job opportunities, deadlines and application che
 
 ## Screenshots
 
-These screenshots use fictional example applications.
+Fictional examples, captured from the running app.
 
-**Dashboard**
+![Task-focused dashboard and application checklists](docs/screenshots/dashboard.png)
 
-![Dashboard showing application status totals, upcoming deadlines, missing documents and recent submissions](docs/screenshots/dashboard.jpg)
+[Mobile layout](docs/screenshots/mobile.png) · [Job-description prefill](docs/screenshots/prefill.png)
 
-**Application checklists**
-
-![Two application cards showing their details, statuses and checklist progress](docs/screenshots/checklists.jpg)
-
-**Add from a job description**
-
-![Application form with suggested fields filled from a sample job description](docs/screenshots/prefill.jpg)
+Use priority filters to find overdue jobs, upcoming deadlines or missing documents. Expand **Application pipeline** for status totals. Each checklist suggests a next step appropriate to the application's current stage.
 
 ## Run locally
 

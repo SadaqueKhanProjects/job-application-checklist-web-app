@@ -76,9 +76,20 @@ export function updateTask(app, index, checked, now) {
   else if (app.status === 'Not started' && checked) result.status = 'In progress';
   return result;
 }
-export function filterApplications(applications, { query = '', status = 'all', jobType = 'all', workMode = 'all', sort = 'deadline' } = {}) {
+export function filterApplications(applications, { query = '', status = 'all', jobType = 'all', workMode = 'all', sort = 'deadline', focus = 'all', today = localDate() } = {}) {
   const search = query.trim().toLowerCase();
   return applications.filter(app => [app.company, app.title, app.location, app.stageReached, app.contact].join(' ').toLowerCase().includes(search) &&
+    (focus === 'all' || (focus === 'documents' && missingDocuments(app)) || (focus === 'overdue' && active(app) && dayDifference(app.deadline, today) < 0) || (focus === 'due' && active(app) && dayDifference(app.deadline, today) >= 0 && dayDifference(app.deadline, today) <= 7)) &&
     (status === 'all' || app.status === status) && (jobType === 'all' || app.jobType === jobType) && (workMode === 'all' || app.workMode === workMode))
     .sort((a, b) => sort === 'company' ? a.company.localeCompare(b.company) : sort === 'newest' ? b.createdAt.localeCompare(a.createdAt) : sort === 'applied' ? (b.appliedOn || '').localeCompare(a.appliedOn || '') : a.deadline.localeCompare(b.deadline));
+}
+
+// Suggest work appropriate to the stage, without changing the saved checklist.
+export function nextStep(app) {
+  if (['Rejected', 'Withdrawn', 'Offer accepted'].includes(app.status)) return 'Application closed';
+  if (app.status === 'Offer') return 'Review your offer';
+  if (app.status === 'Interview') return app.tasks[6] ? 'Interview preparation complete' : TASKS[6];
+  if (app.status === 'Assessment') return 'Prepare for your assessment';
+  const start = active(app) ? 0 : 5;
+  return TASKS.find((task, index) => index >= start && !app.tasks[index]) || 'All steps complete';
 }

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { TASKS, STATUSES, STORAGE_KEY, validDate, localDate, dayDifference, active, missingDocuments, safeUrl, readApplications, saveApplications, updateStatus, updateTask, DETAIL_DEFAULTS, SCHEMA_VERSION, filterApplications, validateApplication } from '../src/domain.js';
+import { nextStep, TASKS, STATUSES, STORAGE_KEY, validDate, localDate, dayDifference, active, missingDocuments, safeUrl, readApplications, saveApplications, updateStatus, updateTask, DETAIL_DEFAULTS, SCHEMA_VERSION, filterApplications, validateApplication } from '../src/domain.js';
 const sample = () => ({ ...DETAIL_DEFAULTS, id: 'test-1', company: 'Example', title: 'Designer', deadline: '2026-10-28', link: 'https://example.com/job', status: 'Not started', tasks: TASKS.map(() => false), createdAt: '2026-10-28T10:00:00.000Z', submittedAt: null });
 const memoryStorage = () => { const data = new Map(); return { getItem: key => data.get(key) ?? null, setItem: (key, value) => data.set(key, value) }; };
 test('dates use calendar days including DST boundaries and reject impossible dates', () => {
@@ -99,4 +99,34 @@ test('malformed v2 records and duplicate IDs fail reads without changing saved c
 test('withdrawal before submission does not manufacture an application date', () => {
   const app = updateStatus(sample(), 'Withdrawn');
   assert.equal(app.appliedOn, ''); assert.equal(app.submittedAt, null); assert.equal(app.tasks[4], false);
+});
+
+test('priority filters respect deadline boundaries and exclude submitted outcomes', () => {
+  const today = '2026-10-29';
+  const records = [
+    { ...sample(), id: 'late', deadline: '2026-10-28' },
+    { ...sample(), id: 'today', deadline: today },
+    { ...sample(), id: 'week', deadline: '2026-11-05' },
+    { ...sample(), id: 'later', deadline: '2026-11-06' },
+    { ...sample(), id: 'submitted', deadline: '2026-10-28', status: 'Submitted' },
+  ];
+  const ids = focus => filterApplications(records, { focus, today }).map(app => app.id);
+  assert.deepEqual(ids('overdue'), ['late']);
+  assert.deepEqual(ids('due'), ['today', 'week']);
+  assert.deepEqual(ids('documents'), ['late', 'today', 'week', 'later']);
+  assert.equal(filterApplications(records, { focus: 'due', today, query: 'missing' }).length, 0);
+  assert.equal(filterApplications(records, { focus: 'overdue', today, status: 'Submitted' }).length, 0);
+  assert.equal(filterApplications(records, { focus: 'all', today }).length, 5);
+});
+
+test('next steps reflect the current stage without rewriting checklist data', () => {
+  const app = sample();
+  assert.equal(nextStep(app), TASKS[0]);
+  assert.equal(nextStep({ ...app, tasks: app.tasks.map((done, i) => i === 0) }), TASKS[1]);
+  assert.equal(nextStep({ ...app, status: 'Submitted' }), TASKS[5]);
+  assert.equal(nextStep({ ...app, status: 'Interview' }), TASKS[6]);
+  assert.equal(nextStep({ ...app, status: 'Offer' }), 'Review your offer');
+  assert.equal(nextStep({ ...app, status: 'Rejected' }), 'Application closed');
+  assert.equal(nextStep({ ...app, tasks: TASKS.map(() => true) }), 'All steps complete');
+  assert.deepEqual(app.tasks, TASKS.map(() => false));
 });
