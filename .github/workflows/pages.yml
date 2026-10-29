@@ -1,0 +1,84 @@
+name: Publish website
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    # No private-repository runner usage, and no deployment before explicit setup.
+    if: github.event.repository.private == false && github.ref == 'refs/heads/main' && vars.PAGES_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pages: write
+    environment:
+      name: github-pages
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Validate before publishing
+        run: |
+          npm run check
+          npm test
+          git show --format= --check HEAD
+          npm run build:site
+      - name: Check out published branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: gh-pages
+          path: published
+      - name: Update website files
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          rsync -a --delete --exclude='.git' .site/ published/
+          cd published
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add --all
+          if ! git diff --cached --quiet; then
+            git commit -m "deploy: publish ${SOURCE_SHA}"
+            git push origin HEAD:gh-pages
+          fi
+          echo "PUBLISHED_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+      - name: Request and verify Pages build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # GITHUB_TOKEN pushes do not automatically start a Pages build.
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds" > /dev/null
+          for attempt in $(seq 1 24); do
+            result=$(gh api "repos/${GITHUB_REPOSITORY}/pages/builds/latest")
+            commit=$(jq -r '.commit' <<< "$result")
+            build_status=$(jq -r '.status' <<< "$result")
+            if [ "$commit" = "$PUBLISHED_SHA" ]; then
+              if [ "$build_status" = 'built' ]; then
+                gh api "repos/${GITHUB_REPOSITORY}/pages" --jq '.html_url'
+                exit 0
+              fi
+              if [ "$build_status" = 'errored' ]; then
+                echo 'Pages build failed.'
+                exit 1
+              fi
+            fi
+            sleep 15
+          done
+          echo 'Pages build did not complete within six minutes.'
+          exit 1
