@@ -39,11 +39,18 @@ Run from the project directory:
 
 | Command | Purpose |
 | --- | --- |
+| `npm run build:site` | Package runtime assets into `.site/` for hosting. |
 | `npm start` | Start the local preview server. |
 | `npm test` | Run the automated tests. |
 | `npm run check` | Check JavaScript syntax. |
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for branches, PRs and CI.
+
+## Hosting and CI/CD
+
+GitHub Pages deployment is prepared but not yet activated. The proposed free setup requires this repository to be public, with owner approval. PRs run tests; successful `main` changes publish the website. No paid runners, cache or uploaded Actions artifacts are used. See [hosting setup](docs/hosting.md).
+
+Existing localhost data does not automatically appear on the hosted address: browser storage is separate for each origin.
 
 ## Cost
 
